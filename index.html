@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SoundPad Studio — Free open-source soundboard for Windows. Play sounds in voice chats, hotkeys, recording, audio loopback. Inspired by Leppsoft SoundPad." />
+  <meta name="keywords" content="soundpad, soundboard, voice chat, hotkeys, virtual audio cable, discord, games, free, open source" />
+  <meta name="author" content="SoundPad Studio" />
+  <meta property="og:title" content="SoundPad Studio — Open Source Soundboard for Windows" />
+  <meta property="og:description" content="Play sounds in voice chats with global hotkeys, recording, and audio loopback." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="og-image.png" />
+  <title>SoundPad Studio — Open Source Soundboard for Windows</title>
+
+  <!-- ============================================================
+       SoundPad Studio — Marketing Website
+       Single-file site for GitHub Pages
+       ============================================================
+
+       CUSTOMIZATION:
+       - The download link is already set to your GitHub release
+       - The Eitaa channel is set to @Unkwon
+       - All GitHub links point to: unknown404esp-glitch/soundPad
+       - To customize further, edit the URLs directly in this file
+
+       DEPLOY to GitHub Pages:
+       1. Push this file to your repo's "docs/" folder (or root if you prefer)
+       2. In repo Settings → Pages → Source: "Deploy from a branch / main / docs"
+       3. Wait 1-2 minutes, your site will be at:
+          https://unknown404esp-glitch.github.io/soundPad/
+       ============================================================ -->
+
+  <!-- Favicon (inline SVG with gradient) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f97316'/%3E%3Cstop offset='1' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='4' fill='url(%23g)'/%3E%3Cpath d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z' fill='white'/%3E%3C/svg%3E" />
+
+  <!-- Fonts: Vazirmatn (Farsi) + Inter (English) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       CSS Variables — Neon Cyber theme
+       ============================================================ */
+    :root {
+      --bg: #0a0e1a;
+      --bg-2: #0f172a;
+      --panel: rgba(15, 23, 42, 0.6);
+      --panel-2: rgba(30, 41, 59, 0.5);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hi: rgba(255, 255, 255, 0.15);
+      --text: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.65);
+      --text-dim: rgba(255, 255, 255, 0.4);
+
+      --accent: #f97316;        /* orange-500 */
+      --accent-2: #ec4899;      /* pink-500 */
+      --accent-3: #a855f7;       /* purple-500 */
+      --accent-cyan: #22d3ee;
+      --accent-emerald: #10b981;
+
+      --grad-orange: linear-gradient(135deg, #f97316, #ec4899);
+      --grad-purple: linear-gradient(135deg, #a855f7, #ec4899);
+      --grad-cyan: linear-gradient(135deg, #22d3ee, #3b82f6);
+
+      --shadow-glow: 0 0 40px rgba(236, 72, 153, 0.4), 0 0 80px rgba(249, 115, 22, 0.2);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --radius: 16px;
+
+      --font-en: 'Inter', system-ui, sans-serif;
+      --font-fa: 'Vazirmatn', 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-en);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    body[dir="rtl"] { font-family: var(--font-fa); }
+
+    /* ============================================================
+       Background layers (Three.js canvas + gradient blobs)
+       ============================================================ */
+    #bg-canvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -2;
+    }
+    .bg-blobs {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1; pointer-events: none; overflow: hidden;
+    }
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35;
+    }
+    .blob-1 { width: 500px; height: 500px; background: #f97316; top: -100px; left: -100px; animation: float-1 18s infinite ease-in-out; }
+    .blob-2 { width: 400px; height: 400px; background: #ec4899; top: 30%; right: -100px; animation: float-2 22s infinite ease-in-out; }
+    .blob-3 { width: 450px; height: 450px; background: #a855f7; bottom: -100px; left: 30%; animation: float-3 25s infinite ease-in-out; }
+    @keyframes float-1 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(80px, 60px); } }
+    @keyframes float-2 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-60px, 80px); } }
+    @keyframes float-3 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(60px, -60px); } }
+
+    /* ============================================================
+       Navbar
+       ============================================================ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      padding: 14px 24px;
+      background: rgba(10, 14, 26, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 20px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 18px;
+      color: white; text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: var(--grad-orange);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    }
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: white; }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex; gap: 6px; flex: 1;
+    }
+    .nav-link {
+      padding: 8px 14px; border-radius: 8px;
+      color: var(--text-muted); text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .lang-toggle {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: white; cursor: pointer; font-weight: 700;
+      font-size: 13px; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lang-toggle:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .nav-cta {
+      padding: 10px 18px; border-radius: 10px;
+      background: var(--grad-orange);
+      color: white; text-decoration: none;
+      font-weight: 700; font-size: 14px;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+    }
+
+    /* ============================================================
+       Main container
+       ============================================================ */
+    main { padding-top: 64px; }
+
+    section { padding: 100px 24px; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 768px) { section { padding: 60px 16px; } }
+
+    .section-tag {
+      display: inline-block;
+      padding: 6px 14px; border-radius: 999px;
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: var(--accent); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px); font-weight: 900;
+      line-height: 1.1; margin-bottom: 16px;
+      background: linear-gradient(135deg, white, rgba(255, 255, 255, 0.7));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .section-subtitle {
+      font-size: 18px; color: var(--text-muted);
+      max-width: 600px; margin-bottom: 40px;
+    }
+    .section-title-center { text-align: center; margin: 0 auto; }
+    .section-subtitle-center { text-align: center; margin-left: auto; margin-right: auto; }
+
+    /* ============================================================
+       Hero
+       ============================================================ */
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 80px 24px;
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 999px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #c084fc; font-size: 13px; font-weight: 600;
+      margin-bottom: 24px;
+      animation: pulse-glow 3s infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+    }
+    .hero-badge-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #a855f7; animation: dot-pulse 1.5s infinite;
+    }
+    @keyframes dot-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 8vw, 80px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      max-width: 900px;
+    }
+    .hero-title-gradient {
+      background: var(--grad-orange);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+    .hero-title-purple {
+      background: var(--grad-purple);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text-muted);
+      max-width: 600px; margin-bottom: 40px;
+    }
+
+    .hero-cta {
+      display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+    }
+    .btn {
+      padding: 14px 28px; border-radius: 12px;
+      font-weight: 700; font-size: 15px;
+      text-decoration: none; cursor: pointer; border: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--grad-orange);
+      color: white;
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(236, 72, 153, 0.55);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      border: 1px solid var(--border-hi);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* === Direct download button (Gharbal-style) === */
+    .download-direct {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 18px 36px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f97316, #ec4899);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      box-shadow:
+        0 10px 30px rgba(236, 72, 153, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      font-family: inherit;
+    }
+    .download-direct::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .download-direct:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow:
+        0 15px 40px rgba(236, 72, 153, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+    }
+    .download-direct:hover::before { opacity: 1; }
+    .download-direct:active { transform: translateY(-1px) scale(1); }
+    .download-direct-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .download-direct-label {
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    .download-direct-file {
+      font-size: 12px;
+      opacity: 0.85;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+    }
+
+    .hero-stats {
+      display: flex; gap: 32px; margin-top: 60px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-num {
+      font-size: 28px; font-weight: 900;
+      background: var(--grad-orange);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-stat-label {
+      font-size: 13px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* 3D Pad showcase */
+    .hero-pad-showcase {
+      perspective: 1200px;
+      margin-top: 60px;
+      width: 100%; max-width: 600px;
+    }
+    .pad-grid-3d {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      transform: rotateX(15deg) rotateY(-5deg);
+      transform-style: preserve-3d;
+      animation: showcase-rotate 12s infinite ease-in-out;
+    }
+    @keyframes showcase-rotate {
+      0%, 100% { transform: rotateX(15deg) rotateY(-5deg); }
+      50% { transform: rotateX(10deg) rotateY(5deg); }
+    }
+    .pad-3d {
+      aspect-ratio: 1;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px var(--g);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: white; font-size: 28px; font-weight: 800;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      animation: pad-pulse 2s infinite alternate;
+      transform-style: preserve-3d;
+    }
+    .pad-3d:nth-child(1) { --c1: #f97316; --c2: #ec4899; --g: rgba(249, 115, 22, 0.5); }
+    .pad-3d:nth-child(2) { --c1: #ec4899; --c2: #a855f7; --g: rgba(236, 72, 153, 0.5); animation-delay: 0.2s; }
+    .pad-3d:nth-child(3) { --c1: #a855f7; --c2: #3b82f6; --g: rgba(168, 85, 247, 0.5); animation-delay: 0.4s; }
+    .pad-3d:nth-child(4) { --c1: #22d3ee; --c2: #3b82f6; --g: rgba(34, 211, 238, 0.5); animation-delay: 0.6s; }
+    .pad-3d:nth-child(5) { --c1: #10b981; --c2: #22d3ee; --g: rgba(16, 185, 129, 0.5); animation-delay: 0.8s; }
+    .pad-3d:nth-child(6) { --c1: #f59e0b; --c2: #ef4444; --g: rgba(245, 158, 11, 0.5); animation-delay: 1.0s; }
+    .pad-3d:nth-child(7) { --c1: #ec4899; --c2: #f43f5e; --g: rgba(236, 72, 153, 0.5); animation-delay: 1.2s; }
+    .pad-3d:nth-child(8) { --c1: #8b5cf6; --c2: #d946ef; --g: rgba(139, 92, 246, 0.5); animation-delay: 1.4s; }
+    @keyframes pad-pulse {
+      0% { transform: translateZ(0); }
+      100% { transform: translateZ(20px); }
+    }
+    .pad-3d-emoji { font-size: 28px; line-height: 1; }
+
+    @media (max-width: 768px) {
+      .hero-pad-showcase { transform: scale(0.7); }
+    }
+
+    /* ============================================================
+       Features grid
+       ============================================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--grad-orange);
+      opacity: 0; transition: opacity 0.3s;
+      z-index: -1;
+    }
+    .feature-card:hover {
+      border-color: rgba(249, 115, 22, 0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card), 0 0 30px rgba(249, 115, 22, 0.1);
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2));
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feature-icon svg { width: 24px; height: 24px; fill: var(--accent); }
+    .feature-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ============================================================
+       Comparison table
+       ============================================================ */
+    .comparison-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+    }
+    .comparison-table {
+      width: 100%; border-collapse: collapse; min-width: 600px;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 16px 20px; text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th {
+      background: rgba(0, 0, 0, 0.3);
+      font-weight: 700; font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .comparison-table th:first-child { text-align: left; }
+    .comparison-table th.featured {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(236, 72, 153, 0.15));
+      color: var(--accent);
+    }
+    .comparison-table td {
+      font-size: 14px; color: var(--text-muted);
+    }
+    .comparison-table td:first-child {
+      color: white; font-weight: 600; text-align: left;
+    }
+    .comparison-table td.featured {
+      background: rgba(249, 115, 22, 0.05);
+      color: white; font-weight: 600;
+    }
+    .check { color: #10b981; font-weight: 700; }
+    .x { color: #ef4444; font-weight: 700; }
+    .partial { color: #f59e0b; font-weight: 700; }
+
+    /* ============================================================
+       Installation steps
+       ============================================================ */
+    .install-grid {
+      display: grid; grid-template-columns: 1fr; gap: 32px;
+    }
+    .install-step {
+      display: flex; gap: 24px; padding: 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      transition: all 0.3s;
+    }
+    .install-step:hover {
+      border-color: rgba(249, 115, 22, 0.3);
+      transform: translateX(-4px);
+    }
+    body[dir="rtl"] .install-step:hover { transform: translateX(4px); }
+    .install-step-num {
+      flex-shrink: 0;
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--grad-orange);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: white;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    }
+    .install-step-content h3 {
+      font-size: 18px; font-weight: 800; margin-bottom: 8px;
+    }
+    .install-step-content p {
+      font-size: 14px; color: var(--text-muted); margin-bottom: 12px;
+    }
+    .install-step-content code {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 8px; border-radius: 6px;
+      font-family: 'Courier New', monospace; font-size: 13px;
+      color: #fbbf24;
+    }
+    .install-step-content a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .install-step-content a:hover { text-decoration: underline; }
+
+    .install-tabs {
+      display: flex; gap: 4px; padding: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      max-width: fit-content;
+    }
+    .install-tab {
+      padding: 10px 20px; border-radius: 8px;
+      background: transparent; border: none;
+      color: var(--text-muted); cursor: pointer;
+      font-weight: 600; font-size: 14px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .install-tab.active {
+      background: var(--grad-orange);
+      color: white;
+    }
+    .install-tab:hover:not(.active) { color: white; }
+
+    .install-content { display: none; }
+    .install-content.active { display: block; }
+
+    /* ============================================================
+       FAQ
+       ============================================================ */
+    .faq-list { max-width: 800px; margin: 0 auto; }
+    .faq-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      transition: border-color 0.3s;
+    }
+    .faq-item.open { border-color: rgba(249, 115, 22, 0.3); }
+    .faq-question {
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; font-weight: 700; font-size: 16px;
+      user-select: none;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-icon {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-answer {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .faq-item.open .faq-answer { max-height: 500px; }
+    .faq-answer-inner {
+      padding: 0 24px 20px;
+      color: var(--text-muted); font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       Changelog
+       ============================================================ */
+    .changelog-list { max-width: 800px; margin: 0 auto; }
+    .changelog-item {
+      display: flex; gap: 20px; padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      backdrop-filter: blur(20px);
+    }
+    .changelog-version {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      background: var(--grad-orange);
+      border-radius: 8px;
+      font-weight: 800; font-size: 14px;
+      color: white;
+      height: fit-content;
+    }
+    .changelog-content h4 {
+      font-size: 16px; font-weight: 700; margin-bottom: 8px;
+    }
+    .changelog-content ul {
+      list-style: none; padding: 0;
+    }
+    .changelog-content li {
+      padding: 4px 0; font-size: 14px; color: var(--text-muted);
+      padding-right: 20px; position: relative;
+    }
+    body[dir="rtl"] .changelog-content li { padding-right: 20px; padding-left: 0; }
+    .changelog-content li::before {
+      content: '✦'; position: absolute; right: 0; top: 4px;
+      color: var(--accent);
+    }
+    body[dir="rtl"] .changelog-content li::before {
+      right: auto; left: -20px;
+    }
+
+    /* ============================================================
+       Support / Share section
+       ============================================================ */
+    .support-wrapper {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+    .support-wrapper::before {
+      content: ''; position: absolute; inset: -2px;
+      background: var(--grad-orange);
+      border-radius: var(--radius);
+      opacity: 0.15;
+      z-index: -1;
+    }
+    .support-title {
+      font-size: 28px; font-weight: 900; margin-bottom: 12px;
+    }
+    .support-desc {
+      color: var(--text-muted); margin-bottom: 32px;
+      max-width: 500px; margin-left: auto; margin-right: auto;
+    }
+    .share-buttons {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .share-btn {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center;
+      color: white; cursor: pointer; transition: all 0.25s;
+      text-decoration: none;
+    }
+    .share-btn:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.25);
+    }
+    .share-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+    /* ============================================================
+       Footer
+       ============================================================ */
+    footer {
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      background: rgba(10, 14, 26, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: white; }
+    footer .footer-links {
+      display: flex; gap: 20px; justify-content: center;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+
+    /* ============================================================
+       Utility
+       ============================================================ */
+    [data-i18n] { display: block; }
+    .hidden { display: none !important; }
+
+    /* Scroll bar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      border-radius: 5px;
+    }
+
+    /* === Eitaa channel button === */
+    .eitaa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 28px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2a5d8f, #1e3a5f);
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 6px 20px rgba(42, 93, 143, 0.4);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+    }
+    .eitaa-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 10px 30px rgba(42, 93, 143, 0.55);
+    }
+    .eitaa-btn-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: white;
+      color: #2a5d8f;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .eitaa-btn-content { display: flex; flex-direction: column; }
+    .eitaa-btn-label { font-size: 14px; line-height: 1.2; }
+    .eitaa-btn-id { font-size: 13px; opacity: 0.9; font-family: 'Courier New', monospace; }
+
+    .support-divider {
+      display: flex; align-items: center;
+      gap: 16px; margin: 32px 0;
+      color: var(--text-dim); font-size: 13px;
+    }
+    .support-divider::before,
+    .support-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+
+    /* === Direct download badge — file info === */
+    .download-info {
+      margin-top: 16px;
+      display: flex; align-items: center;
+      gap: 16px;
+      flex-wrap: wrap; justify-content: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    .download-info-item {
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .download-info-item svg { width: 14px; height: 14px; fill: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <!-- Three.js background canvas -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      </div>
+      <span>Sound<span>Pad</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link" data-i18n-key="nav.features">Features</a>
+      <a href="#install" class="nav-link" data-i18n-key="nav.install">Install</a>
+      <a href="#comparison" class="nav-link" data-i18n-key="nav.compare">Compare</a>
+      <a href="#faq" class="nav-link" data-i18n-key="nav.faq">FAQ</a>
+      <a href="#changelog" class="nav-link" data-i18n-key="nav.changelog">Changelog</a>
+      <a href="#support" class="nav-link" data-i18n-key="nav.support">Support</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" id="langToggle" title="Switch language">FA</button>
+      <a href="#download" class="nav-cta" data-i18n-key="nav.download">Download</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ============================================================
+         HERO SECTION
+         ============================================================ -->
+    <section class="hero" id="hero">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span data-i18n-key="hero.badge">Open Source • Free • No Ads</span>
+      </div>
+      <h1 class="hero-title">
+        <span data-i18n-key="hero.title1">Play sounds in</span>
+        <span class="hero-title-gradient" data-i18n-key="hero.title2">voice chats</span><br>
+        <span data-i18n-key="hero.title3">like a pro.</span>
+      </h1>
+      <p class="hero-subtitle" data-i18n-key="hero.subtitle">
+        SoundPad Studio is a free, open-source soundboard for Windows.
+        Trigger sounds with global hotkeys, record audio, and broadcast through
+        your microphone — inspired by Leppsoft SoundPad.
+      </p>
+      <div class="hero-cta" id="download">
+        <a href="https://github.com/unknown404esp-glitch/soundPad/releases/download/soundPad/SoundPad-Studio-1.0.0.exe"
+           class="btn btn-primary"
+           download
+           id="downloadMain">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          <span data-i18n-key="hero.downloadWin">Download for Windows</span>
+        </a>
+      </div>
+      <div class="download-info">
+        <span class="download-info-item">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          <span data-i18n-key="hero.info.direct">Direct download</span>
+        </span>
+        <span class="download-info-item">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93z"/></svg>
+          <span>v1.0.0</span>
+        </span>
+        <span class="download-info-item">
+          <svg viewBox="0 0 24 24"><path d="M2 22h20V2L2 22z"/></svg>
+          <span>Windows 10/11 (64-bit)</span>
+        </span>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">25+</div>
+          <div class="hero-stat-label" data-i18n-key="hero.stats.sounds">Built-in Sounds</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">12</div>
+          <div class="hero-stat-label" data-i18n-key="hero.stats.hotbar">Hotbar Slots</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">∞</div>
+          <div class="hero-stat-label" data-i18n-key="hero.stats.upload">Custom Uploads</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-label" data-i18n-key="hero.stats.free">Free & Open</div>
+        </div>
+      </div>
+
+      <!-- 3D Pad showcase -->
+      <div class="hero-pad-showcase">
+        <div class="pad-grid-3d">
+          <div class="pad-3d"><span class="pad-3d-emoji">🥁</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">⚡</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">🔔</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">🚨</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">👏</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">🎉</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">🎹</span></div>
+          <div class="pad-3d"><span class="pad-3d-emoji">💥</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FEATURES SECTION
+         ============================================================ -->
+    <section id="features">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <span class="section-tag" data-i18n-key="features.tag">Features</span>
+        <h2 class="section-title section-title-center" data-i18n-key="features.title">
+          Everything you need to spice up your voice
+        </h2>
+        <p class="section-subtitle section-subtitle-center" data-i18n-key="features.subtitle">
+          A complete soundboard experience — built with Web Audio API and Electron.
+        </p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f1.title">25+ Built-in Sounds</h3>
+          <p class="feature-desc" data-i18n-key="features.f1.desc">Drums, effects, UI sounds, audience reactions, and musical notes — all synthesized in real-time. No external files needed.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f2.title">Global Hotkeys</h3>
+          <p class="feature-desc" data-i18n-key="features.f2.desc">Assign any key combination (F1, Ctrl+G, Alt+1, Shift+Mouse...) and trigger sounds even when minimized or in fullscreen games.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f3.title">Microphone Recording</h3>
+          <p class="feature-desc" data-i18n-key="features.f3.desc">Record from your microphone, trim and normalize with the built-in editor, then add it to your soundboard.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f4.title">Upload & Edit</h3>
+          <p class="feature-desc" data-i18n-key="features.f4.desc">Import MP3, WAV, OGG files. Cut, trim, and normalize volume with the visual waveform editor.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f5.title">3 Play Modes</h3>
+          <p class="feature-desc" data-i18n-key="features.f5.desc">Switch between speakers-only, microphone-only, or both. Perfect for testing sounds before sharing.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f6.title">System Tray</h3>
+          <p class="feature-desc" data-i18n-key="features.f6.desc">Minimize to system tray and keep hotkeys active in the background. Lightweight on CPU and memory.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3.5L11.5 6 9 11.5l2.5 5.5L14 12l2.5 5L19 12l-2.5-5L14 11l-2-5.5z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f7.title">Repeat & Continue</h3>
+          <p class="feature-desc" data-i18n-key="features.f7.desc">Loop a single sound infinitely, or play your sound list sequentially like a media player.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n-key="features.f8.title">Categories & Hotbar</h3>
+          <p class="feature-desc" data-i18n-key="features.f8.desc">Organize sounds into custom categories. Pin your favorites to the 12-slot hotbar for instant access.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         COMPARISON SECTION
+         ============================================================ -->
+    <section id="comparison">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <span class="section-tag" data-i18n-key="compare.tag">Comparison</span>
+        <h2 class="section-title section-title-center" data-i18n-key="compare.title">
+          How does it compare?
+        </h2>
+        <p class="section-subtitle section-subtitle-center" data-i18n-key="compare.subtitle">
+          See how SoundPad Studio stacks up against paid alternatives.
+        </p>
+      </div>
+      <div class="comparison-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th data-i18n-key="compare.feature">Feature</th>
+              <th class="featured">SoundPad Studio</th>
+              <th>Leppsoft SoundPad</th>
+              <th>Voicemod Pro</th>
+              <th>EXP Soundboard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-i18n-key="compare.row1">Price</td>
+              <td class="featured" data-i18n-key="compare.free">Free</td>
+              <td data-i18n-key="compare.paid">$5 (Steam)</td>
+              <td data-i18n-key="compare.sub">$25/year</td>
+              <td data-i18n-key="compare.free">Free</td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row2">Open Source</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row3">Global Hotkeys</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="partial">~</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row4">Built-in Sounds</td>
+              <td class="featured">25+</td>
+              <td><span class="x">✗</span></td>
+              <td>100+</td>
+              <td><span class="x">✗</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row5">Sound Recording</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="x">✗</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row6">Sound Editor</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="x">✗</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row7">System Tray</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row8">No Telemetry</td>
+              <td class="featured"><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row9">Cross-platform</td>
+              <td class="featured"><span class="partial">~</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="check">✓</span></td>
+            </tr>
+            <tr>
+              <td data-i18n-key="compare.row10">Voice Changer</td>
+              <td class="featured"><span class="x">✗</span></td>
+              <td><span class="x">✗</span></td>
+              <td><span class="check">✓</span></td>
+              <td><span class="x">✗</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         INSTALL SECTION
+         ============================================================ -->
+    <section id="install">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <span class="section-tag" data-i18n-key="install.tag">Installation</span>
+        <h2 class="section-title section-title-center" data-i18n-key="install.title">
+          Get started in minutes
+        </h2>
+        <p class="section-subtitle section-subtitle-center" data-i18n-key="install.subtitle">
+          Choose your preferred method. Pre-built installer is the easiest.
+        </p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="install-tabs">
+        <button class="install-tab active" data-tab="installer" data-i18n-key="install.tab.installer">Pre-built Installer</button>
+        <button class="install-tab" data-tab="source" data-i18n-key="install.tab.source">Build from Source</button>
+        <button class="install-tab" data-tab="routing" data-i18n-key="install.tab.routing">Audio Routing</button>
+      </div>
+
+      <!-- Tab: Installer -->
+      <div class="install-content active" id="content-installer">
+        <div class="install-grid">
+          <div class="install-step">
+            <div class="install-step-num">1</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.i1.title">Download the installer</h3>
+              <p data-i18n-key="install.i1.desc">Grab the latest <code>SoundPad-Studio-1.0.0.exe</code> from GitHub Releases. NSIS installer (recommended) or portable version.</p>
+              <p><a href="https://github.com/unknown404esp-glitch/soundPad/releases/latest" target="_blank" rel="noopener" data-i18n-key="install.i1.link">→ Go to Downloads</a></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">2</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.i2.title">Run the installer</h3>
+              <p data-i18n-key="install.i2.desc">Double-click the .exe file. Choose install location (or just use portable .exe directly without installation).</p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">3</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.i3.title">Launch SoundPad Studio</h3>
+              <p data-i18n-key="install.i3.desc">Find it in your Start Menu or on your Desktop. An icon will also appear in your system tray.</p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">4</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.i4.title">Assign hotkeys</h3>
+              <p data-i18n-key="install.i4.desc">Right-click any sound in the list to assign a global hotkey (e.g. <code>Ctrl+F1</code>, <code>Alt+1</code>).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Source -->
+      <div class="install-content" id="content-source">
+        <div class="install-grid">
+          <div class="install-step">
+            <div class="install-step-num">1</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.s1.title">Install prerequisites</h3>
+              <p>Install <strong>Node.js 20+</strong> from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>. Also install <strong>Python 3</strong> (for icon generation, optional).</p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">2</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.s2.title">Clone the repository</h3>
+              <p><code>git clone https://github.com/unknown404esp-glitch/soundPad.git</code></p>
+              <p><code>cd soundPad</code></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">3</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.s3.title">Run the build script</h3>
+              <p>Double-click <code>build-exe.bat</code> (Windows) or run:</p>
+              <p><code>npm install</code><br><code>npm run build:exe</code></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">4</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.s4.title">Find your .exe</h3>
+              <p data-i18n-key="install.s4.desc">After 5-15 minutes, the executable appears in the <code>dist/</code> folder.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Audio Routing -->
+      <div class="install-content" id="content-routing">
+        <div class="install-grid">
+          <div class="install-step">
+            <div class="install-step-num">1</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.r1.title">Install VB-CABLE (free)</h3>
+              <p>Download from <a href="https://vb-audio.com/Cable/" target="_blank" rel="noopener">vb-audio.com/Cable</a>. Extract, right-click <code>VBCABLE_Setup_x64.exe</code> → Run as administrator → Install. <strong>Restart your PC.</strong></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">2</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.r2.title">Set Windows output to CABLE Input</h3>
+              <p data-i18n-key="install.r2.desc">Right-click the speaker icon in taskbar → Sound settings → Output device → <code>CABLE Input (VB-Audio Virtual Cable)</code></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">3</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.r3.title">Set Discord/Game input to CABLE Output</h3>
+              <p data-i18n-key="install.r3.desc">In Discord: Settings → Voice & Video → Input device → <code>CABLE Output (VB-Audio Virtual Cable)</code></p>
+            </div>
+          </div>
+          <div class="install-step">
+            <div class="install-step-num">4</div>
+            <div class="install-step-content">
+              <h3 data-i18n-key="install.r4.title">Test it</h3>
+              <p data-i18n-key="install.r4.desc">Open SoundPad Studio, set the play mode to "Both" or "Microphone" in the toolbar, and click a sound. Your friends in Discord will hear it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FAQ SECTION
+         ============================================================ -->
+    <section id="faq">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <span class="section-tag" data-i18n-key="faq.tag">FAQ</span>
+        <h2 class="section-title section-title-center" data-i18n-key="faq.title">
+          Frequently asked questions
+        </h2>
+        <p class="section-subtitle section-subtitle-center" data-i18n-key="faq.subtitle">
+          Got more questions? Open an issue on GitHub.
+        </p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q1">Is it really free?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a1">
+              Yes. SoundPad Studio is 100% free and open-source under the MIT license. No ads, no telemetry, no in-app purchases. You can use it, modify it, and distribute it freely.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q2">Why don't my friends hear the sounds?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a2">
+              Browsers and Electron cannot send audio directly to your system microphone input for security reasons. You need a Virtual Audio Cable (VB-CABLE) — see the Installation tab "Audio Routing" for step-by-step instructions. It's free and takes 5 minutes.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q3">Do hotkeys work when minimized or in fullscreen games?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a3">
+              Yes — the desktop .exe version uses Electron's globalShortcut API, which works at the OS level. Hotkeys work even when the app is minimized to system tray or when you're in a fullscreen game. (The web demo version only supports hotkeys when the browser tab is focused.)
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q4">What audio formats are supported?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a4">
+              You can upload MP3, WAV, OGG, FLAC, M4A, and WebM files. The app uses the browser's native audio decoding, so any format your browser supports will work.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q5">Is there a Mac or Linux version?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a5">
+              The web demo (index.html) works on any OS. The desktop .exe is currently Windows-only, but the codebase is cross-platform — community contributions for macOS/Linux builds are welcome!
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q6">Can I use this for streaming on Twitch/YouTube?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a6">
+              Absolutely. Use "Listen to this device" in Windows Sound settings to route the CABLE Output back to your speakers. Then in OBS, add a new Audio Input Capture source and select "CABLE Output". Your viewers will hear the sounds while you do too.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q7">My antivirus flags the .exe as suspicious. Why?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a7">
+              This is a false positive. Electron apps without a paid code-signing certificate often get flagged. The code is open-source — you can review every line and build it yourself from source. To suppress the warning, add the dist folder to your antivirus exclusions.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            <span data-i18n-key="faq.q8">How do I report a bug or request a feature?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-inner" data-i18n-key="faq.a8">
+              Open an issue on our GitHub repository. Please include: your OS version, the app version, steps to reproduce, and any error messages. We respond to most issues within 48 hours.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHANGELOG SECTION
+         ============================================================ -->
+    <section id="changelog">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <span class="section-tag" data-i18n-key="changelog.tag">Changelog</span>
+        <h2 class="section-title section-title-center" data-i18n-key="changelog.title">
+          What's new
+        </h2>
+        <p class="section-subtitle section-subtitle-center" data-i18n-key="changelog.subtitle">
+          Stay up to date with the latest features and fixes.
+        </p>
+      </div>
+      <div class="changelog-list">
+        <div class="changelog-item">
+          <div class="changelog-version">v1.0.0</div>
+          <div class="changelog-content">
+            <h4>🎉 Initial Release</h4>
+            <ul>
+              <li>25+ built-in synthesized sounds across 6 categories</li>
+              <li>Global hotkeys (work even when minimized)</li>
+              <li>System tray integration</li>
+              <li>Microphone recording with built-in editor</li>
+              <li>Upload MP3/WAV/OGG with waveform editing</li>
+              <li>3 play modes: speakers, microphone, both</li>
+              <li>12-slot hotbar with custom colors</li>
+              <li>Pause/Resume/Seek for uploaded sounds</li>
+              <li>Repeat mode and continuous playback</li>
+              <li>Light/Dark theme</li>
+              <li>Fully responsive (mobile + desktop)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SUPPORT SECTION
+         ============================================================ -->
+    <section id="support">
+      <div class="support-wrapper">
+        <h2 class="support-title" data-i18n-key="support.title">Help us spread the word</h2>
+        <p class="support-desc" data-i18n-key="support.desc">
+          SoundPad Studio is a free, community-driven project.
+          The best way to support us is to star the repo and share it with your friends!
+        </p>
+
+        <!-- Eitaa channel -->
+        <a href="https://eitaa.com/Unkwon" target="_blank" rel="noopener" class="eitaa-btn" id="eitaaChannel">
+          <div class="eitaa-btn-icon">E</div>
+          <div class="eitaa-btn-content">
+            <span class="eitaa-btn-label" data-i18n-key="support.eitaa">Our Eitaa channel</span>
+            <span class="eitaa-btn-id">@Unkwon</span>
+          </div>
+        </a>
+
+        <div class="support-divider" data-i18n-key="support.or">or help by sharing</div>
+
+        <div class="share-buttons">
+          <a href="https://github.com/unknown404esp-glitch/soundPad" target="_blank" rel="noopener" class="share-btn" title="Star on GitHub" id="shareGithub">
+            <svg viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.401 8.169L12 18.896l-7.335 3.87 1.4-8.169L.132 9.21l8.2-1.192z"/></svg>
+          </a>
+          <a href="#" class="share-btn" title="Share on X (Twitter)" id="shareTwitter">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.65l-5.2-6.79-5.94 6.79H1.73l7.73-8.835L1.34 2.25h6.822l4.71 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="share-btn" title="Share on Telegram" id="shareTelegram">
+            <svg viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+          </a>
+          <a href="#" class="share-btn" title="Share on Reddit" id="shareReddit">
+            <svg viewBox="0 0 24 24"><path d="M14.5 15.41c.28-.28.72-.28 1 0 .28.28.28.72 0 1-.78.78-2.05.78-2.83 0l-1-1c-.28-.28-.28-.72 0-1 .28-.28.72-.28 1 0l1 1c.28.28.78.28 1 0zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm6.06 12.65c.13.31.07.67-.16.91-.23.24-.59.3-.91.17-.31-.13-.67-.07-.91.16-.24.23-.3.59-.17.91.13.31.07.67-.16.91-.24.24-.59.3-.91.17-.31-.13-.67-.07-.91.16-.24.23-.3.59-.17.91.13.31.07.67-.16.91-.24.24-.59.3-.91.17-.32-.13-.68-.07-.92.16-.24.23-.3.59-.17.91.13.31.07.67-.16.91-.24.24-.59.3-.91.17-.32-.13-.68-.07-.92.16-.24.23-.3.59-.17.91.13.31.07.67-.16.91-.24.24-.6.3-.91.17z"/></svg>
+          </a>
+          <a href="#" class="share-btn" title="Copy link" id="shareCopy">
+            <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://github.com/unknown404esp-glitch/soundPad" target="_blank" rel="noopener" data-i18n-key="footer.github">GitHub</a>
+      <a href="https://github.com/unknown404esp-glitch/soundPad/releases" target="_blank" rel="noopener" data-i18n-key="footer.releases">Releases</a>
+      <a href="https://github.com/unknown404esp-glitch/soundPad/issues" target="_blank" rel="noopener" data-i18n-key="footer.issues">Issues</a>
+      <a href="#" data-i18n-key="footer.license">MIT License</a>
+    </div>
+    <p>© 2026 SoundPad Studio. <span data-i18n-key="footer.made">Made with</span> <span style="color: #ec4899;">♥</span> <span data-i18n-key="footer.by">by the open source community.</span></p>
+  </footer>
+
+  <!-- ============================================================
+       THREE.JS — Particle background
+       ============================================================ -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+
+    // Try to setup Three.js — if WebGL isn't available, the CSS gradient
+    // blobs in the background will still look nice (graceful fallback).
+    try {
+      // Setup scene, camera, renderer
+      const canvas = document.getElementById('bg-canvas');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 50;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Particle system
+      const particlesCount = 1500;
+      const positions = new Float32Array(particlesCount * 3);
+      const colors = new Float32Array(particlesCount * 3);
+
+      for (let i = 0; i < particlesCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+
+        // Random color from palette (orange, pink, purple, cyan)
+        const palette = [
+          [0.976, 0.451, 0.086],  // orange
+          [0.925, 0.282, 0.6],    // pink
+          [0.659, 0.333, 0.969],  // purple
+          [0.133, 0.827, 0.933],  // cyan
+        ];
+        const c = palette[Math.floor(Math.random() * palette.length)];
+        colors[i * 3] = c[0];
+        colors[i * 3 + 1] = c[1];
+        colors[i * 3 + 2] = c[2];
+      }
+
+      const particlesGeometry = new THREE.BufferGeometry();
+      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const particlesMaterial = new THREE.PointsMaterial({
+        size: 0.6,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.7,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+      });
+
+      const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+      scene.add(particles);
+
+      // Mouse parallax
+      const mouse = { x: 0, y: 0 };
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      // Animate
+      function animate() {
+        requestAnimationFrame(animate);
+
+        particles.rotation.y += 0.0005;
+        particles.rotation.x += 0.0002;
+
+        // Subtle camera parallax based on mouse
+        camera.position.x += (mouse.x * 5 - camera.position.x) * 0.05;
+        camera.position.y += (-mouse.y * 5 - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    } catch (err) {
+      console.warn('Three.js not available, using CSS gradient background only:', err.message);
+      // The CSS blobs and gradient already provide a beautiful fallback.
+    }
+  </script>
+
+  <!-- ============================================================
+       SCRIPTS — i18n, FAQ, tabs, share
+       ============================================================ -->
+  <script>
+    // === Translation dictionary ===
+    const translations = {
+      en: {
+        'nav.features': 'Features',
+        'nav.install': 'Install',
+        'nav.compare': 'Compare',
+        'nav.faq': 'FAQ',
+        'nav.changelog': 'Changelog',
+        'nav.support': 'Support',
+        'nav.download': 'Download',
+
+        'hero.badge': 'Open Source • Free • No Ads',
+        'hero.title1': 'Play sounds in',
+        'hero.title2': 'voice chats',
+        'hero.title3': 'like a pro.',
+        'hero.subtitle': 'SoundPad Studio is a free, open-source soundboard for Windows. Trigger sounds with global hotkeys, record audio, and broadcast through your microphone — inspired by Leppsoft SoundPad.',
+        'hero.downloadWin': 'Download for Windows',
+        'hero.webDemo': 'Try Web Demo',
+        'hero.viewSource': 'View Source',
+        'hero.info.direct': 'Direct download',
+        'hero.stats.sounds': 'Built-in Sounds',
+        'hero.stats.hotbar': 'Hotbar Slots',
+        'hero.stats.upload': 'Custom Uploads',
+        'hero.stats.free': 'Free & Open',
+
+        'features.tag': 'Features',
+        'features.title': 'Everything you need to spice up your voice',
+        'features.subtitle': 'A complete soundboard experience — built with Web Audio API and Electron.',
+        'features.f1.title': '25+ Built-in Sounds',
+        'features.f1.desc': 'Drums, effects, UI sounds, audience reactions, and musical notes — all synthesized in real-time. No external files needed.',
+        'features.f2.title': 'Global Hotkeys',
+        'features.f2.desc': 'Assign any key combination (F1, Ctrl+G, Alt+1, Shift+Mouse...) and trigger sounds even when minimized or in fullscreen games.',
+        'features.f3.title': 'Microphone Recording',
+        'features.f3.desc': 'Record from your microphone, trim and normalize with the built-in editor, then add it to your soundboard.',
+        'features.f4.title': 'Upload & Edit',
+        'features.f4.desc': 'Import MP3, WAV, OGG files. Cut, trim, and normalize volume with the visual waveform editor.',
+        'features.f5.title': '3 Play Modes',
+        'features.f5.desc': 'Switch between speakers-only, microphone-only, or both. Perfect for testing sounds before sharing.',
+        'features.f6.title': 'System Tray',
+        'features.f6.desc': 'Minimize to system tray and keep hotkeys active in the background. Lightweight on CPU and memory.',
+        'features.f7.title': 'Repeat & Continue',
+        'features.f7.desc': 'Loop a single sound infinitely, or play your sound list sequentially like a media player.',
+        'features.f8.title': 'Categories & Hotbar',
+        'features.f8.desc': 'Organize sounds into custom categories. Pin your favorites to the 12-slot hotbar for instant access.',
+
+        'compare.tag': 'Comparison',
+        'compare.title': 'How does it compare?',
+        'compare.subtitle': 'See how SoundPad Studio stacks up against paid alternatives.',
+        'compare.feature': 'Feature',
+        'compare.free': 'Free',
+        'compare.paid': '$5 (Steam)',
+        'compare.sub': '$25/year',
+        'compare.row1': 'Price',
+        'compare.row2': 'Open Source',
+        'compare.row3': 'Global Hotkeys',
+        'compare.row4': 'Built-in Sounds',
+        'compare.row5': 'Sound Recording',
+        'compare.row6': 'Sound Editor',
+        'compare.row7': 'System Tray',
+        'compare.row8': 'No Telemetry',
+        'compare.row9': 'Cross-platform',
+        'compare.row10': 'Voice Changer',
+
+        'install.tag': 'Installation',
+        'install.title': 'Get started in minutes',
+        'install.subtitle': 'Choose your preferred method. Pre-built installer is the easiest.',
+        'install.tab.installer': 'Pre-built Installer',
+        'install.tab.source': 'Build from Source',
+        'install.tab.routing': 'Audio Routing',
+        'install.i1.title': 'Download the installer',
+        'install.i1.desc': 'Grab the latest SoundPad-Studio-1.0.0.exe from GitHub Releases. NSIS installer (recommended) or portable version.',
+        'install.i1.link': '→ Go to Downloads',
+        'install.i2.title': 'Run the installer',
+        'install.i2.desc': 'Double-click the .exe file. Choose install location (or just use portable .exe directly without installation).',
+        'install.i3.title': 'Launch SoundPad Studio',
+        'install.i3.desc': 'Find it in your Start Menu or on your Desktop. An icon will also appear in your system tray.',
+        'install.i4.title': 'Assign hotkeys',
+        'install.i4.desc': 'Right-click any sound in the list to assign a global hotkey (e.g. Ctrl+F1, Alt+1).',
+        'install.s1.title': 'Install prerequisites',
+        'install.s2.title': 'Clone the repository',
+        'install.s3.title': 'Run the build script',
+        'install.s4.title': 'Find your .exe',
+        'install.s4.desc': 'After 5-15 minutes, the executable appears in the dist/ folder.',
+        'install.r1.title': 'Install VB-CABLE (free)',
+        'install.r2.title': 'Set Windows output to CABLE Input',
+        'install.r2.desc': 'Right-click the speaker icon in taskbar → Sound settings → Output device → CABLE Input (VB-Audio Virtual Cable)',
+        'install.r3.title': 'Set Discord/Game input to CABLE Output',
+        'install.r3.desc': 'In Discord: Settings → Voice & Video → Input device → CABLE Output (VB-Audio Virtual Cable)',
+        'install.r4.title': 'Test it',
+        'install.r4.desc': 'Open SoundPad Studio, set the play mode to "Both" or "Microphone" in the toolbar, and click a sound. Your friends in Discord will hear it.',
+
+        'faq.tag': 'FAQ',
+        'faq.title': 'Frequently asked questions',
+        'faq.subtitle': 'Got more questions? Open an issue on GitHub.',
+        'faq.q1': 'Is it really free?',
+        'faq.a1': 'Yes. SoundPad Studio is 100% free and open-source under the MIT license. No ads, no telemetry, no in-app purchases. You can use it, modify it, and distribute it freely.',
+        'faq.q2': "Why don't my friends hear the sounds?",
+        'faq.a2': 'Browsers and Electron cannot send audio directly to your system microphone input for security reasons. You need a Virtual Audio Cable (VB-CABLE) — see the Installation tab "Audio Routing" for step-by-step instructions. It\'s free and takes 5 minutes.',
+        'faq.q3': 'Do hotkeys work when minimized or in fullscreen games?',
+        'faq.a3': 'Yes — the desktop .exe version uses Electron\'s globalShortcut API, which works at the OS level. Hotkeys work even when the app is minimized to system tray or when you\'re in a fullscreen game. (The web demo version only supports hotkeys when the browser tab is focused.)',
+        'faq.q4': 'What audio formats are supported?',
+        'faq.a4': "You can upload MP3, WAV, OGG, FLAC, M4A, and WebM files. The app uses the browser's native audio decoding, so any format your browser supports will work.",
+        'faq.q5': 'Is there a Mac or Linux version?',
+        'faq.a5': 'The web demo (index.html) works on any OS. The desktop .exe is currently Windows-only, but the codebase is cross-platform — community contributions for macOS/Linux builds are welcome!',
+        'faq.q6': 'Can I use this for streaming on Twitch/YouTube?',
+        'faq.a6': 'Absolutely. Use "Listen to this device" in Windows Sound settings to route the CABLE Output back to your speakers. Then in OBS, add a new Audio Input Capture source and select "CABLE Output". Your viewers will hear the sounds while you do too.',
+        'faq.q7': 'My antivirus flags the .exe as suspicious. Why?',
+        'faq.a7': 'This is a false positive. Electron apps without a paid code-signing certificate often get flagged. The code is open-source — you can review every line and build it yourself from source. To suppress the warning, add the dist folder to your antivirus exclusions.',
+        'faq.q8': 'How do I report a bug or request a feature?',
+        'faq.a8': 'Open an issue on our GitHub repository. Please include: your OS version, the app version, steps to reproduce, and any error messages. We respond to most issues within 48 hours.',
+
+        'changelog.tag': 'Changelog',
+        'changelog.title': "What's new",
+        'changelog.subtitle': 'Stay up to date with the latest features and fixes.',
+
+        'support.title': 'Help us spread the word',
+        'support.desc': 'SoundPad Studio is a free, community-driven project. The best way to support us is to star the repo and share it with your friends!',
+        'support.eitaa': 'Our Eitaa channel',
+        'support.or': 'or help by sharing',
+
+        'footer.github': 'GitHub',
+        'footer.releases': 'Releases',
+        'footer.issues': 'Issues',
+        'footer.license': 'MIT License',
+        'footer.made': 'Made with',
+        'footer.by': 'by the open source community.',
+      },
+      fa: {
+        'nav.features': 'ویژگی‌ها',
+        'nav.install': 'نصب',
+        'nav.compare': 'مقایسه',
+        'nav.faq': 'سوالات',
+        'nav.changelog': 'تغییرات',
+        'nav.support': 'حمایت',
+        'nav.download': 'دانلود',
+
+        'hero.badge': 'متن‌باز • رایگان • بدون تبلیغ',
+        'hero.title1': 'صداها را در',
+        'hero.title2': 'چت‌های صوتی',
+        'hero.title3': 'حرفه‌ای پخش کن.',
+        'hero.subtitle': 'ساندبورد استودیو یک ساندبورد رایگان و متن‌باز برای ویندوزه. با hotkey‌های سراسری صداها رو پخش کن، ضبط کن و از طریق میکروفون بفرست — الهام‌گرفته از Leppsoft SoundPad.',
+        'hero.downloadWin': 'دانلود برای ویندوز',
+        'hero.webDemo': 'دموی تحت وب',
+        'hero.viewSource': 'مشاهده کد',
+        'hero.info.direct': 'دانلود مستقیم',
+        'hero.stats.sounds': 'صدای آماده',
+        'hero.stats.hotbar': 'اسلات هات‌بار',
+        'hero.stats.upload': 'آپلود سفارشی',
+        'hero.stats.free': 'رایگان و آزاد',
+
+        'features.tag': 'ویژگی‌ها',
+        'features.title': 'هر چی برای جذاب‌تر کردن صدایت لازم داری',
+        'features.subtitle': 'یک تجربه کامل ساندبورد — ساخته‌شده با Web Audio API و Electron.',
+        'features.f1.title': '۲۵+ صدای آماده',
+        'features.f1.desc': 'درامز، افکت‌ها، صداهای UI، واکنش‌ مخاطبان و نت‌های موسیقی — همه به‌صورت بلادرنگ سنتزش می‌شن. نیازی به فایل خارجی نیست.',
+        'features.f2.title': 'کلیدهای میان‌بر سراسری',
+        'features.f2.desc': 'هر ترکیب کلیدی (F1، Ctrl+G، Alt+1، Shift+Mouse...) رو اختصاص بده و حتی وقتی برنامه مینیمایز یا تو بازی fullscreen هست صدا پخش کن.',
+        'features.f3.title': 'ضبط میکروفون',
+        'features.f3.desc': 'از میکروفون ضبط کن، با ادیتور داخلی برش و نرمال‌سازی کن و به ساندبورد اضافه کن.',
+        'features.f4.title': 'آپلود و ویرایش',
+        'features.f4.desc': 'فایل‌های MP3، WAV، OGG رو آپلود کن. با ادیتور waveform بصری برش بزن، trim کن و ولوم رو نرمال کن.',
+        'features.f5.title': '۳ حالت پخش',
+        'features.f5.desc': 'بین فقط اسپیکر، فقط میکروفون یا هر دو سوییچ کن. برای تست صدا قبل از اشتراک‌گذاری عالیه.',
+        'features.f6.title': 'System Tray',
+        'features.f6.desc': 'به tray مینیمایز کن و hotkeys رو در پس‌زمینه فعال نگه‌دار. سبک روی CPU و حافظه.',
+        'features.f7.title': 'تکرار و پخش متوالی',
+        'features.f7.desc': 'یک صدا رو بی‌نهایت تکرار کن یا لیست صداهاتو مثل مدیاپلیر پشت سر هم پخش کن.',
+        'features.f8.title': 'دسته‌بندی و هات‌بار',
+        'features.f8.desc': 'صداها رو در دسته‌های سفارشی سازماندهی کن. علاقه‌مندی‌هاتو به هات‌بار ۱۲ اسلاتی pin کن.',
+
+        'compare.tag': 'مقایسه',
+        'compare.title': 'با رقیب‌ها چطور مقایسه میشه؟',
+        'compare.subtitle': 'ببین ساندبورد استودیو در برابر جایگزین‌های پولی چطوره.',
+        'compare.feature': 'ویژگی',
+        'compare.free': 'رایگان',
+        'compare.paid': '۵ دلار (Steam)',
+        'compare.sub': '۲۵ دلار/سال',
+        'compare.row1': 'قیمت',
+        'compare.row2': 'متن‌باز',
+        'compare.row3': 'Hotkeys سراسری',
+        'compare.row4': 'صدای آماده',
+        'compare.row5': 'ضبط صدا',
+        'compare.row6': 'ادیتور صدا',
+        'compare.row7': 'System Tray',
+        'compare.row8': 'بدون تله‌متری',
+        'compare.row9': 'Cross-platform',
+        'compare.row10': 'تغییر صدا',
+
+        'install.tag': 'نصب',
+        'install.title': 'در چند دقیقه شروع کن',
+        'install.subtitle': 'روش دلخواهت رو انتخاب کن. نصب‌کننده آماده ساده‌ترین راهه.',
+        'install.tab.installer': 'نصب‌کننده آماده',
+        'install.tab.source': 'بیلد از سورس',
+        'install.tab.routing': 'مسیریابی صدا',
+        'install.i1.title': 'نصب‌کننده رو دانلود کن',
+        'install.i1.desc': 'آخرین SoundPad-Studio-1.0.0.exe رو از GitHub Releases بگیر. نصب‌کننده NSIS (پیشنهادی) یا نسخه portable.',
+        'install.i1.link': '→ رفتن به دانلود',
+        'install.i2.title': 'نصب‌کننده رو اجرا کن',
+        'install.i2.desc': 'دو بار روی فایل .exe کلیک کن. مسیر نصب رو انتخاب کن (یا فقط از نسخه portable مستقیم استفاده کن).',
+        'install.i3.title': 'ساندبورد استودیو رو باز کن',
+        'install.i3.desc': 'تو Start Menu یا روی Desktop پیداش کن. یک آیکن هم در System Tray قرار می‌گیره.',
+        'install.i4.title': 'کلیدهای میان‌بر اختصاص بده',
+        'install.i4.desc': 'روی هر صدا راست‌کلیک کن تا یک hotkey سراسری (مثل Ctrl+F1، Alt+1) اختصاص بدی.',
+        'install.s1.title': 'پیش‌نیازها رو نصب کن',
+        'install.s2.title': 'ریپازیتوری رو کلون کن',
+        'install.s3.title': 'اسکریپت بیلد رو اجرا کن',
+        'install.s4.title': 'فایل .exe رو پیدا کن',
+        'install.s4.desc': 'بعد از ۵-۱۵ دقیقه، فایل اجرایی در پوشه dist/ ساخته می‌شه.',
+        'install.r1.title': 'VB-CABLE رو نصب کن (رایگان)',
+        'install.r2.title': 'خروجی ویندوز رو روی CABLE Input تنظیم کن',
+        'install.r2.desc': 'راست‌کلیک روی آیکن صدا در taskbar ← Sound settings ← Output device ← CABLE Input (VB-Audio Virtual Cable)',
+        'install.r3.title': 'ورودی Discord/بازی رو روی CABLE Output تنظیم کن',
+        'install.r3.desc': 'در Discord: Settings ← Voice & Video ← Input device ← CABLE Output (VB-Audio Virtual Cable)',
+        'install.r4.title': 'تستش کن',
+        'install.r4.desc': 'ساندبورد استودیو رو باز کن، در نوار ابزار حالت پخش رو روی «هر دو» یا «میکروفون» بذار و یک صدا پخش کن. دوستانت در Discord صداشو می‌شنون.',
+
+        'faq.tag': 'سوالات متداول',
+        'faq.title': 'سوال‌های پرتکرار',
+        'faq.subtitle': 'سوال دیگه داری؟ در گیت‌هاب issue باز کن.',
+        'faq.q1': 'واقعاً رایگانه؟',
+        'faq.a1': 'بله. ساندبورد استودیو ۱۰۰٪ رایگان و متن‌باز تحت لایسنس MIT هست. بدون تبلیغ، بدون تله‌متری، بدون خرید درون‌برنامه‌ای. می‌تونی ازش استفاده کنی، تغییر بدی و توزیع کنی.',
+        'faq.q2': 'چرا دوستانم صداها رو نمی‌شنون؟',
+        'faq.a2': 'مرورگر و Electron به‌خاطر امنیت نمی‌تونن صدا رو مستقیماً به ورودی میکروفون سیستم بفرستن. باید یک Virtual Audio Cable (VB-CABLE) نصب کنی — در تب «مسیریابی صدا» راهنمای قدم‌به‌قدم هست. رایگانه و ۵ دقیقه طول می‌کشه.',
+        'faq.q3': 'آیا hotkeys وقتی مینیمایز یا تو بازی fullscreen هست کار می‌کنن؟',
+        'faq.a3': 'بله — نسخه دسکتاپ .exe از API globalShortcut الکترون استفاده می‌کنه که در سطح OS کار می‌کنه. hotkeys حتی وقتی برنامه به tray مینیمایز شده یا تو بازی fullscreen هست کار می‌کنن. (نسخه دموی وب فقط وقتی تب مرورگر فوکوس باشه کار می‌کنه.)',
+        'faq.q4': 'چه فرمت‌های صوتی پشتیبانی می‌شن؟',
+        'faq.a4': 'می‌تونی MP3، WAV، OGG، FLAC، M4A و WebM آپلود کنی. برنامه از decode داخلی مرورگر استفاده می‌کنه، پس هر فرمتی که مرورگرت پشتیبانی کنه کار می‌کنه.',
+        'faq.q5': 'نسخه Mac یا Linux هست؟',
+        'faq.a5': 'دموی وب (index.html) روی هر OS کار می‌کنه. نسخه دسکتاپ .exe فعلاً فقط ویندوزه، ولی کد cross-platform هست — کمک جامعه برای بیلد macOS/Linux خوشامد!',
+        'faq.q6': 'می‌تونم برای استریم در Twitch/YouTube استفاده کنم؟',
+        'faq.a6': 'حتماً. از «Listen to this device» در تنظیمات صدای ویندوز استفاده کن تا CABLE Output رو به اسپیکر برگردونی. بعد در OBS، یک منبع Audio Input Capture جدید اضافه کن و «CABLE Output» رو انتخاب کن. بینندگانت صداها رو می‌شنون در حالی که خودتم می‌شنوی.',
+        'faq.q7': 'آنتی‌ویروس فایل .exe رو مشکوک می‌زنه. چرا؟',
+        'faq.a7': 'این false positive هست. برنامه‌های Electron بدون گواهی code-signing پولی معمولاً flagged می‌شن. کد متن‌بازه — می‌تونی هر خطش رو بررسی کنی و خودت از سورس بیلد کنی. برای رفع اخطار، پوشه dist رو به استثنائات آنتی‌ویروس اضافه کن.',
+        'faq.q8': 'چطور باگ گزارش بدم یا ویژگی درخواست کنم؟',
+        'faq.a8': 'در ریپازیتوری گیت‌هاب issue باز کن. لطفاً شامل: نسخه OS، نسخه برنامه، مراحل بازتولید و هر پیام خطا. بیشتر issue‌ها رو در ۴۸ ساعت جواب می‌دیم.',
+
+        'changelog.tag': 'تغییرات',
+        'changelog.title': 'چه چیزی جدید هست',
+        'changelog.subtitle': 'با آخرین ویژگی‌ها و رفع‌ها به‌روز باش.',
+
+        'support.title': 'به ما کمک کن پخش بشه',
+        'support.desc': 'ساندبورد استودیو یک پروژه رایگان و جامعه‌محور است. بهترین راه حمایت، ستاره دادن به ریپو و به اشتراک‌گذاری با دوستانته!',
+        'support.eitaa': 'کانال ایتا ما',
+        'support.or': 'یا با اشتراک‌گذاری کمک کن',
+
+        'footer.github': 'گیت‌هاب',
+        'footer.releases': 'Releases',
+        'footer.issues': 'Issues',
+        'footer.license': 'لایسنس MIT',
+        'footer.made': 'ساخته‌شده با',
+        'footer.by': 'توسط جامعه متن‌باز.',
+      },
+    };
+
+    // === Apply translations ===
+    let currentLang = 'en';
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      const dict = translations[lang];
+      document.querySelectorAll('[data-i18n-key]').forEach(el => {
+        const key = el.getAttribute('data-i18n-key');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+      document.body.dir = lang === 'fa' ? 'rtl' : 'ltr';
+      document.getElementById('langToggle').textContent = lang === 'en' ? 'FA' : 'EN';
+    }
+
+    // Apply default language on initial load (English)
+    applyLanguage('en');
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+      applyLanguage(currentLang === 'en' ? 'fa' : 'en');
+    });
+
+    // === FAQ toggle ===
+    window.toggleFaq = function (el) {
+      const item = el.parentElement;
+      item.classList.toggle('open');
+    };
+
+    // === Install tabs ===
+    document.querySelectorAll('.install-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('content-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // === Share buttons ===
+    const shareUrl = window.location.href;
+    const shareText = 'Check out SoundPad Studio — a free, open-source soundboard for Windows!';
+
+    document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    document.getElementById('shareReddit').href = `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+
+    document.getElementById('shareCopy').addEventListener('click', (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const btn = e.currentTarget;
+        const original = btn.innerHTML;
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="white"/></svg>';
+        setTimeout(() => { btn.innerHTML = original; }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
